@@ -10,14 +10,14 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule);
 
-    const rabbitMQOptions = getRabbitMQMicroserviceOptions();
-    app.connectMicroservice<MicroserviceOptions>(rabbitMQOptions, {
-      inheritAppConfig: true,
-    });
-    const redisOptions = getRedisMicroserviceOptions();
-    app.connectMicroservice<MicroserviceOptions>(redisOptions, {
-      inheritAppConfig: true, // Herda pipes, guards, interceptors do app HTTP
-    });
+    // const rabbitMQOptions = getRabbitMQMicroserviceOptions();
+    // app.connectMicroservice<MicroserviceOptions>(rabbitMQOptions, {
+    //   inheritAppConfig: true,
+    // });
+    // const redisOptions = getRedisMicroserviceOptions();
+    // app.connectMicroservice<MicroserviceOptions>(redisOptions, {
+    //   inheritAppConfig: true, // Herda pipes, guards, interceptors do app HTTP
+    // });
 
     await app.startAllMicroservices();
     await app.listen(process.env.PORT ?? 3000, () => {
