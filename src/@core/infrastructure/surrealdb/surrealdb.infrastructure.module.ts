@@ -1,27 +1,19 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { SurrealDBConnection } from './surrealdb.connection';
+import { loadSurrealDBConfig } from '../../modules/surrealdb/utils/config';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
-  ],
   providers: [
     {
-      provide: 'SurrealDBConnection',
-      useFactory: () => {
-        const uri = process.env.SURREALDB_URI as string;
-        const namespace = process.env.SURREALDB_NAMESPACE as string;
-        const database = process.env.SURREALDB_DATABASE as string;
-        const connection = new SurrealDBConnection(uri, namespace, database);
-        connection.connect();
+      provide: 'SURREALDB_CONNECTION',
+      useFactory: async () => {
+        const config = loadSurrealDBConfig();
+        const connection = new SurrealDBConnection(config.uri, config.namespace, config.database);
+        await connection.connect();
         return connection;
       },
     },
   ],
-  exports: ['SurrealDBConnection'],
+  exports: ['SURREALDB_CONNECTION'],
 })
 export class SurrealDBInfrastructureModule {}

@@ -22,8 +22,8 @@ async function bootstrap() {
     await app.startAllMicroservices();
     await app.listen(process.env.PORT ?? 3000, () => {
       logger.log(`🚀 Server is running on http://localhost:${process.env.PORT ?? 3000}`);
-      logger.log(`📨 Redis microservice listening for messages`);
-      logger.log(`📨 Rabbitmq microservice listening for messages`);
+      // logger.log(`📨 Redis microservice listening for messages`);
+      // logger.log(`📨 Rabbitmq microservice listening for messages`);
     });
   } catch (err) {
     logger.fatal(err);

@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
 import { Surreal, createRemoteEngines } from 'surrealdb';
+import { initializeSurrealDBTables } from './surrealdb.initialize';
 
 export class SurrealDBConnection {
   private db: Surreal;
   private isConnected = false;
   private readonly logger = new Logger('SurrealDBConnection');
-
   constructor(private readonly uri: string, private readonly namespace: string, private readonly database: string) {
     this.db = new Surreal({
       engines: {
@@ -14,6 +14,25 @@ export class SurrealDBConnection {
     });
   }
 
+  onModuleInit() {
+    this.connect().then(() => {
+      this.db.query("INFO FOR DB").then((info) => {
+        this.logger.verbose(`Info: ${JSON.stringify(info)}`);
+      }).catch((error) => {
+        this.logger.error('Error fetching SurrealDB info', error);
+      });
+      initializeSurrealDBTables(this.db).then(() => {
+        this.logger.log('SurrealDB tables initialized');
+      }).catch((error) => {
+        this.logger.error('Error initializing SurrealDB tables', error);
+      });
+    }).catch((error) => {
+      this.logger.error('Error connecting to SurrealDB', error);
+    });
+  }
+  onModuleDestroy() {
+    this.close();
+  }
   async connect(): Promise<void> {
     try {
       await this.db.connect(this.uri);

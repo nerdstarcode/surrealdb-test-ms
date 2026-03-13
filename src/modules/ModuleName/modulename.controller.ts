@@ -1,21 +1,13 @@
-import { Body, Controller, Logger, Post, Query, Req, Res } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { Response } from 'express';
-import { RedisClient } from 'src/@core/infrastructure/redis/redis.infrastructure';
-import { RabbitMQClient } from 'src/@core/infrastructure/rabbitmq/rabbitmq.infrastructure';
-import { createSuccessResponse, tratativeResponse } from 'src/@core/dto/response.t';
+import { Body, Controller, Get, Logger, Param, Post, Put, Query, Req, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { ModuleNameService } from './modulename.service';
+import type { CreateUserDto, UpdateUserDto, UserEntity } from 'src/@core/entity/example-surrealdb.entity';
 
 const logger = new Logger('Module Name');
 @Controller('moduleName')
 // @UseGuards(JwtGuardGuard)
-@ApiBearerAuth()
 @ApiTags('ModuleName') export class ModuleNameController {
-  constructor(
-    private readonly _redisClient: RedisClient,
-    private readonly _rabbitMQClient: RabbitMQClient
-  ) { }
+  constructor(private readonly moduleNameService: ModuleNameService) { }
 
   @Post('index')
   async index(
@@ -25,33 +17,28 @@ const logger = new Logger('Module Name');
     @Body() body: unknown,
   ) {
     logger.debug(`${req.url} called`);
-    return firstValueFrom(
-      this._redisClient.client.send(
-        { inventory: 'observation/index' },
-        { page, limit, body },
-      ),
-    );
+    return
   }
 
-  @MessagePattern({ inventory: 'observation/index' })
-  async observationIndex(@Payload() payload: { page: string; limit: string; body: unknown }) {
-    logger.debug('MessagePattern observation/index received');
-    return { received: payload };
+  @Post('users')
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.moduleNameService.createUser(createUserDto);
   }
 
-  @Post('test')
-  async test(@Body() body: unknown, @Res() res: Response) {
-    logger.debug('MessagePattern sending to test_queue');
-
-    return tratativeResponse(res, await firstValueFrom(this._rabbitMQClient.client.send({ cmd: 'test_queue' }, body || {})));
+  @Put('users/:id')
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.moduleNameService.updateUser(id, updateUserDto);
   }
 
-  @EventPattern({ cmd: 'test_queue' })
-  async testQueue(@Payload() payload: { page: string; limit: string; body: unknown }) {
-    logger.debug('MessagePattern test_queue received', payload);
-
-    return createSuccessResponse({ data: { received: payload } });
+  @Get('users')
+  async findAllUsers(@Res() res: any, @Query('filters') filters?: UserEntity, @Query('page') page?: number, @Query('limit') limit?: number) {
+    const result = await this.moduleNameService.findAllUsers(filters, page, limit);
+    res.setHeader('Content-Type', 'application/json');
+    res.status(result?.status || 200).json(result);
   }
 
-
+  @Get('users/:id')
+  async findUserById(@Param('id') id: string) {
+    return this.moduleNameService.findUserById(id);
+  }
 }
