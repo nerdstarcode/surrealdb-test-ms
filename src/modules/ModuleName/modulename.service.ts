@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { UserService, CreateUserDto, UpdateUserDto, UserEntity } from '../../@core/entity/example-surrealdb.entity';
-import fi from 'zod/v4/locales/fi.js';
-import { stat } from 'fs';
+import { VaccineTableEntity } from 'src/@core/entity/vaccine-table-surrealdb.entity';
 
 @Injectable()
 export class ModuleNameService {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly vaccine: VaccineTableEntity
+  ) { }
 
   async createUser(data: CreateUserDto) {
     return this.userService.create(data);

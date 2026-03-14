@@ -29,7 +29,6 @@ export class VaccineTableEntity extends UtilsSurrealDB {
     DEFINE FIELD location ON ${this.nameTable} TYPE string PERMISSIONS FULL;
     DEFINE FIELD next_application ON ${this.nameTable} TYPE datetime PERMISSIONS FULL;
     DEFINE FIELD record_ids ON ${this.nameTable} TYPE array<string> PERMISSIONS FULL;
-    DEFINE FIELD record_ids.* ON ${this.nameTable} TYPE string PERMISSIONS FULL;
     DEFINE FIELD updated_at ON ${this.nameTable} TYPE datetime READONLY VALUE time::now() ASSERT time::now() PERMISSIONS FULL;
     DEFINE FIELD vet_name ON ${this.nameTable} TYPE string PERMISSIONS FULL;
   `;
@@ -46,9 +45,15 @@ export class VaccineTableEntity extends UtilsSurrealDB {
   }
 
   async startDatabase() {
+    if (!this.db.isConnected) {
+      return setTimeout(() => {
+        logger.debug("wating connection with database")
+        this.startDatabase()
+      }, 1000);
+    }
     try {
-      const infoDB = (await this.db.query<{ result: { tables: Record<string, string> } }[]>("INFO FOR DB"))
-      const tables = Object.keys(infoDB[0]?.result?.tables);
+      const infoDB = (await this.db.query<{ tables: Record<string, string> }[]>("INFO FOR DB"))
+      const tables = Object.keys(infoDB[0]?.tables);
       const tablesDoesntExist = !tables?.includes(this.nameTable);
       if (tablesDoesntExist) {
         logger.debug('starting table');

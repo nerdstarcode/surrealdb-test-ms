@@ -9,6 +9,7 @@ import { _RedisClientModule } from './modules/_RedisClient/_RedisClient.module';
 import { MetricsGrafanaModule } from './@core/infrastructure/metrics-grafana/metrics-grafana.module';
 import { _RabbitMQClientModule } from './modules/_RabbitMQClient/_RabbitMQClient.module';
 import { ModuleNameModule } from './modules/ModuleName/modulename.module';
+import { VaccineTableEntity } from './@core/entity/vaccine-table-surrealdb.entity';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ModuleNameModule } from './modules/ModuleName/modulename.module';
       },
     }),
     ModuleNameModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService],

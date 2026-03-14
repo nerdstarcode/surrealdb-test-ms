@@ -6,7 +6,11 @@ export class SurrealDBConnection {
   private db: Surreal;
   private isConnected = false;
   private readonly logger = new Logger('SurrealDBConnection');
-  constructor(private readonly uri: string, private readonly namespace: string, private readonly database: string) {
+  constructor(
+    private readonly uri: string, 
+    private readonly namespace: string, 
+    private readonly database: string,
+  ) {
     this.db = new Surreal({
       engines: {
         ...createRemoteEngines(),
